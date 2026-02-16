@@ -2,6 +2,11 @@ import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../errors/AppError.js";
 import { logger } from "../utils/logger.js";
 
+/**
+ * Global Express error handler. Distinguishes operational {@link AppError}s
+ * (which return the appropriate status code) from unexpected errors (logged
+ * and returned as 500).
+ */
 export function errorHandler(
   err: Error,
   _req: Request,
