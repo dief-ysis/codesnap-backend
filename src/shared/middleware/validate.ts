@@ -35,6 +35,9 @@ export function validate(schemas: ValidationSchemas) {
       }
       next();
     } catch (error) {
+      // Zod throws a ZodError containing an array of issues, each with a path
+      // and message. We flatten them into a single human-readable string so
+      // API consumers get all validation errors in one response, not just the first.
       if (error instanceof ZodError) {
         const details = error.issues
           .map((issue) => `${issue.path.join(".")}: ${issue.message}`)

@@ -10,6 +10,8 @@ export class AppError extends Error {
     super(message);
     this.statusCode = statusCode;
     this.isOperational = isOperational;
+    // Required because TypeScript's ES5 output breaks the prototype chain for
+    // built-in classes (Error). Without this, `instanceof AppError` would fail.
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }

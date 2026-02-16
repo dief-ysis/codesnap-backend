@@ -15,6 +15,9 @@ import type { RegisterInput, LoginInput } from "./auth.schema.js";
  * @throws {ConflictError} If the email or username is already taken
  */
 export async function register(input: RegisterInput) {
+  // Single-query duplicate check: uses OR to find any user matching either email
+  // or username, avoiding two separate queries. We then compare the matched field
+  // to provide a field-specific error message ("Email" vs "Username" already taken).
   const existing = await prisma.user.findFirst({
     where: {
       OR: [{ email: input.email }, { username: input.username }],

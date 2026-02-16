@@ -20,7 +20,9 @@ const snippetSelect = {
   createdAt: true,
   updatedAt: true,
   user: { select: { id: true, username: true, displayName: true, avatarUrl: true } },
+  // Tags are stored via a join table (SnippetTag); we select through it to get tag data
   tags: { select: { tag: { select: { id: true, name: true } } } },
+  // Virtual fork count — Prisma doesn't have a `forksCount` field, so we compute it via _count
   _count: { select: { forks: true } },
 } satisfies Prisma.SnippetSelect;
 
@@ -28,14 +30,18 @@ const snippetSelect = {
 function formatSnippet(snippet: any) {
   return {
     ...snippet,
+    // Flatten join-table: [{ tag: { id, name } }] → [{ id, name }]
     tags: snippet.tags.map((st: any) => st.tag),
+    // Promote nested _count to a top-level field for cleaner API responses
     forksCount: snippet._count.forks,
-    _count: undefined,
+    _count: undefined, // Remove the Prisma _count wrapper from the response
   };
 }
 
 /** Builds Prisma connectOrCreate operations for tags, normalising names to lowercase. */
 async function connectOrCreateTags(tags: string[]) {
+  // Each tag uses connectOrCreate on the join table (SnippetTag → Tag)
+  // This ensures tags are deduplicated by lowercase name
   return tags.map((name) => ({
     tag: {
       connectOrCreate: {
@@ -113,6 +119,8 @@ export async function getById(snippetId: string, requestUserId?: string) {
 
   if (!snippet) throw new NotFoundError("Snippet not found");
 
+  // Intentionally return NotFoundError (not ForbiddenError) to avoid leaking
+  // the existence of private snippets to unauthorized users
   if (
     snippet.visibility === "PRIVATE" &&
     snippet.userId !== requestUserId
@@ -148,6 +156,8 @@ export async function update(
     where: { id: snippetId },
     data: {
       ...data,
+      // Atomic tag replacement: delete all existing tag associations, then recreate.
+      // This avoids complex diffing logic and ensures tags match the input exactly.
       tags: tags
         ? {
             deleteMany: {},
@@ -237,7 +247,10 @@ export async function search(
 ) {
   const offset = (page - 1) * limit;
 
-  // Full-text search using PostgreSQL tsvector
+  // Raw SQL is required because Prisma doesn't support PostgreSQL tsvector/tsquery natively.
+  // We use plainto_tsquery for safe query parsing and ts_rank for relevance ordering.
+  // Language filter uses manual SQL escaping (single-quote doubling) since it's
+  // concatenated into the query string (parameterized queries don't support dynamic WHERE clauses).
   const languageFilter = language
     ? `AND s.language = '${language.replace(/'/g, "''")}'`
     : "";
@@ -287,8 +300,8 @@ export async function search(
       createdAt: s.createdAt,
       updatedAt: s.updatedAt,
       user: { id: s.userId, username: s.username, displayName: s.displayName, avatarUrl: s.avatarUrl },
-      tags: [],
-      forksCount: 0,
+      tags: [], // Raw SQL doesn't join through SnippetTag; tags are omitted for search results
+      forksCount: 0, // Fork count not available in raw query; would require an extra subquery
     })),
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
   };
@@ -323,9 +336,9 @@ export async function fork(snippetId: string, userId: string) {
       description: original.description,
       code: original.code,
       language: original.language,
-      visibility: "PRIVATE",
+      visibility: "PRIVATE", // Forks always start as PRIVATE so the user can review before publishing
       userId,
-      forkedFromId: snippetId,
+      forkedFromId: snippetId, // Tracks lineage — enables "forked from" UI and fork counting
       tags: tagNames.length
         ? { create: await connectOrCreateTags(tagNames) }
         : undefined,

@@ -85,6 +85,8 @@ export async function getById(collectionId: string, userId: string) {
   if (collection.userId !== userId)
     throw new ForbiddenError("Not your collection");
 
+  // Flatten the join-table structure: CollectionSnippet → Snippet with addedAt promoted,
+  // and SnippetTag → Tag flattened, so the API response is clean and easy to consume.
   return {
     ...collection,
     snippets: collection.snippets.map((cs) => ({
@@ -156,6 +158,8 @@ export async function addSnippet(
   if (collection.userId !== userId)
     throw new ForbiddenError("Not your collection");
 
+  // Pre-check the composite unique key (collectionId + snippetId) before inserting.
+  // This gives a clear ConflictError instead of an opaque Prisma unique constraint violation.
   const existing = await prisma.collectionSnippet.findUnique({
     where: { collectionId_snippetId: { collectionId, snippetId } },
   });
