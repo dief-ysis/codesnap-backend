@@ -9,6 +9,7 @@ import { generalLimiter } from "./shared/middleware/rateLimiter.js";
 import { errorHandler } from "./shared/middleware/errorHandler.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import usersRoutes from "./modules/users/users.routes.js";
+import snippetsRoutes from "./modules/snippets/snippets.routes.js";
 
 export const app = express();
 
@@ -34,6 +35,7 @@ app.get("/api/v1/health", (_req, res) => {
 // Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", usersRoutes);
+app.use("/api/v1/snippets", snippetsRoutes);
 
 // Error handler (must be last)
 app.use(errorHandler);
