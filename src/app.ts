@@ -7,6 +7,8 @@ import { config } from "./config/index.js";
 import { swaggerSpec } from "./config/swagger.js";
 import { generalLimiter } from "./shared/middleware/rateLimiter.js";
 import { errorHandler } from "./shared/middleware/errorHandler.js";
+import authRoutes from "./modules/auth/auth.routes.js";
+import usersRoutes from "./modules/users/users.routes.js";
 
 export const app = express();
 
@@ -28,6 +30,10 @@ app.get("/api/v1/health", (_req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// Routes
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/users", usersRoutes);
 
 // Error handler (must be last)
 app.use(errorHandler);
