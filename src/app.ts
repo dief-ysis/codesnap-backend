@@ -10,6 +10,8 @@ import { errorHandler } from "./shared/middleware/errorHandler.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import usersRoutes from "./modules/users/users.routes.js";
 import snippetsRoutes from "./modules/snippets/snippets.routes.js";
+import tagsRoutes from "./modules/tags/tags.routes.js";
+import collectionsRoutes from "./modules/collections/collections.routes.js";
 
 export const app = express();
 
@@ -36,6 +38,8 @@ app.get("/api/v1/health", (_req, res) => {
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", usersRoutes);
 app.use("/api/v1/snippets", snippetsRoutes);
+app.use("/api/v1/tags", tagsRoutes);
+app.use("/api/v1/collections", collectionsRoutes);
 
 // Error handler (must be last)
 app.use(errorHandler);
