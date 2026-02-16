@@ -7,6 +7,13 @@ import {
 } from "../../shared/errors/AppError.js";
 import type { RegisterInput, LoginInput } from "./auth.schema.js";
 
+/**
+ * Registers a new user after checking for duplicate email/username.
+ *
+ * @param input - Validated registration payload
+ * @returns Created user (without passwordHash) and a signed JWT
+ * @throws {ConflictError} If the email or username is already taken
+ */
 export async function register(input: RegisterInput) {
   const existing = await prisma.user.findFirst({
     where: {
@@ -42,6 +49,13 @@ export async function register(input: RegisterInput) {
   return { user, token };
 }
 
+/**
+ * Authenticates a user by email and password.
+ *
+ * @param input - Validated login payload
+ * @returns User profile and a signed JWT
+ * @throws {UnauthorizedError} If credentials are invalid
+ */
 export async function login(input: LoginInput) {
   const user = await prisma.user.findUnique({
     where: { email: input.email },
@@ -69,6 +83,12 @@ export async function login(input: LoginInput) {
   };
 }
 
+/**
+ * Retrieves the current user's profile.
+ *
+ * @param userId - ID of the authenticated user
+ * @returns User profile or `null` if not found
+ */
 export async function getMe(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },

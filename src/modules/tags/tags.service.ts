@@ -1,5 +1,6 @@
 import prisma from "../../config/database.js";
 
+/** Lists all tags alphabetically with their snippet usage count. */
 export async function listWithCount() {
   const tags = await prisma.tag.findMany({
     select: {
@@ -17,6 +18,7 @@ export async function listWithCount() {
   }));
 }
 
+/** Lists public snippets tagged with the given name, with pagination. */
 export async function getSnippetsByTag(
   tagName: string,
   page: number,

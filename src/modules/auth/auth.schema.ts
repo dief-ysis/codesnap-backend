@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+/** Zod schema for user registration request body. */
 export const registerSchema = z.object({
   email: z.string().email("Invalid email address"),
   username: z
@@ -17,10 +18,14 @@ export const registerSchema = z.object({
   displayName: z.string().max(100).optional(),
 });
 
+/** Zod schema for login request body. */
 export const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(1, "Password is required"),
 });
 
+/** Inferred type from {@link registerSchema}. */
 export type RegisterInput = z.infer<typeof registerSchema>;
+
+/** Inferred type from {@link loginSchema}. */
 export type LoginInput = z.infer<typeof loginSchema>;
