@@ -11,6 +11,8 @@ export async function listWithCount() {
     orderBy: { name: "asc" },
   });
 
+  // Promote Prisma's nested `_count.snippets` to a flat `snippetCount` field
+  // for a cleaner API response (clients shouldn't depend on Prisma internals).
   return tags.map((t) => ({
     id: t.id,
     name: t.name,

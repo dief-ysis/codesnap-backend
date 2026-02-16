@@ -30,8 +30,11 @@ export function authenticate(
   }
 
   try {
+    // Strip the "Bearer " prefix (7 chars) to extract the raw JWT
     const token = header.slice(7);
     const payload = verifyToken(token);
+    // Attach userId to the request so downstream handlers can identify the
+    // authenticated user without re-parsing the token
     req.userId = payload.userId;
     next();
   } catch {
