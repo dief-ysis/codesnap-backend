@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import * as authService from "./auth.service.js";
 import type { RegisterInput, LoginInput } from "./auth.schema.js";
 
+/** Handles POST /auth/register — creates a new user and returns a JWT. */
 export async function register(
   req: Request,
   res: Response,
@@ -15,6 +16,7 @@ export async function register(
   }
 }
 
+/** Handles POST /auth/login — authenticates a user and returns a JWT. */
 export async function login(
   req: Request,
   res: Response,
@@ -28,6 +30,7 @@ export async function login(
   }
 }
 
+/** Handles GET /auth/me — returns the authenticated user's profile. */
 export async function getMe(
   req: Request,
   res: Response,

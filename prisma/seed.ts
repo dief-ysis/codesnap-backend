@@ -1,3 +1,8 @@
+/**
+ * @module seed
+ * Database seed script that creates demo users, tags, snippets (including a fork),
+ * and collections. Run with `npx prisma db seed`.
+ */
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 

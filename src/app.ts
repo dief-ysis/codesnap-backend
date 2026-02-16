@@ -1,3 +1,9 @@
+/**
+ * @module app
+ * Express application setup. Configures security middleware (Helmet, CORS),
+ * logging (Morgan), rate limiting, Swagger UI, API routes, and the global
+ * error handler.
+ */
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";

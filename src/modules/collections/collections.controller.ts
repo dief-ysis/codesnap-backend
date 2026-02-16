@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import * as collectionsService from "./collections.service.js";
 
+/** Handles POST /collections — creates a new collection. */
 export async function create(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const collection = await collectionsService.create(req.userId!, req.body);
@@ -10,6 +11,7 @@ export async function create(req: Request, res: Response, next: NextFunction): P
   }
 }
 
+/** Handles GET /collections — lists the authenticated user's collections. */
 export async function list(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const collections = await collectionsService.listByUser(req.userId!);
@@ -19,6 +21,7 @@ export async function list(req: Request, res: Response, next: NextFunction): Pro
   }
 }
 
+/** Handles GET /collections/:id — returns a collection with its snippets. */
 export async function getById(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const collection = await collectionsService.getById(req.params.id as string, req.userId!);
@@ -28,6 +31,7 @@ export async function getById(req: Request, res: Response, next: NextFunction): 
   }
 }
 
+/** Handles PUT /collections/:id — updates a collection. */
 export async function update(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const collection = await collectionsService.update(req.params.id as string, req.userId!, req.body);
@@ -37,6 +41,7 @@ export async function update(req: Request, res: Response, next: NextFunction): P
   }
 }
 
+/** Handles DELETE /collections/:id — deletes a collection. */
 export async function remove(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     await collectionsService.remove(req.params.id as string, req.userId!);
@@ -46,6 +51,7 @@ export async function remove(req: Request, res: Response, next: NextFunction): P
   }
 }
 
+/** Handles POST /collections/:id/snippets — adds a snippet to the collection. */
 export async function addSnippet(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     await collectionsService.addSnippet(req.params.id as string, req.body.snippetId, req.userId!);
@@ -55,6 +61,7 @@ export async function addSnippet(req: Request, res: Response, next: NextFunction
   }
 }
 
+/** Handles DELETE /collections/:id/snippets/:snippetId — removes a snippet from the collection. */
 export async function removeSnippet(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     await collectionsService.removeSnippet(
