@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import * as usersService from "./users.service.js";
 
+/** Handles GET /users/:id — returns a user's public profile. */
 export async function getPublicProfile(
   req: Request,
   res: Response,
@@ -15,6 +16,7 @@ export async function getPublicProfile(
   }
 }
 
+/** Handles PUT /users/:id — updates the authenticated user's profile. */
 export async function updateProfile(
   req: Request,
   res: Response,

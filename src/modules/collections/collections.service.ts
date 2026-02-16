@@ -9,6 +9,7 @@ import type {
   UpdateCollectionInput,
 } from "./collections.schema.js";
 
+/** Creates a new collection owned by the given user. */
 export async function create(userId: string, input: CreateCollectionInput) {
   return prisma.collection.create({
     data: { ...input, userId },
@@ -22,6 +23,7 @@ export async function create(userId: string, input: CreateCollectionInput) {
   });
 }
 
+/** Lists all collections owned by a user, with snippet counts. */
 export async function listByUser(userId: string) {
   const collections = await prisma.collection.findMany({
     where: { userId },
@@ -42,6 +44,12 @@ export async function listByUser(userId: string) {
   }));
 }
 
+/**
+ * Retrieves a collection with its snippets, flattening the join-table structure.
+ *
+ * @throws {NotFoundError} If collection does not exist
+ * @throws {ForbiddenError} If user does not own the collection
+ */
 export async function getById(collectionId: string, userId: string) {
   const collection = await prisma.collection.findUnique({
     where: { id: collectionId },
@@ -87,6 +95,7 @@ export async function getById(collectionId: string, userId: string) {
   };
 }
 
+/** Updates a collection's name and/or description. Owner-only. */
 export async function update(
   collectionId: string,
   userId: string,
@@ -114,6 +123,7 @@ export async function update(
   });
 }
 
+/** Deletes a collection. Owner-only. */
 export async function remove(collectionId: string, userId: string) {
   const existing = await prisma.collection.findUnique({
     where: { id: collectionId },
@@ -127,6 +137,11 @@ export async function remove(collectionId: string, userId: string) {
   await prisma.collection.delete({ where: { id: collectionId } });
 }
 
+/**
+ * Adds a snippet to a collection. Checks the composite unique key first.
+ *
+ * @throws {ConflictError} If the snippet is already in the collection
+ */
 export async function addSnippet(
   collectionId: string,
   snippetId: string,
@@ -152,6 +167,7 @@ export async function addSnippet(
   });
 }
 
+/** Removes a snippet from a collection. Owner-only. */
 export async function removeSnippet(
   collectionId: string,
   snippetId: string,

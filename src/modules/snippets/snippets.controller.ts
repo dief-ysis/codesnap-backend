@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import * as snippetsService from "./snippets.service.js";
 
+/** Handles POST /snippets — creates a new snippet. */
 export async function create(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const snippet = await snippetsService.create(req.userId!, req.body);
@@ -10,6 +11,7 @@ export async function create(req: Request, res: Response, next: NextFunction): P
   }
 }
 
+/** Handles GET /snippets — lists the authenticated user's snippets. */
 export async function listMine(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { page, limit, language } = req.query as any;
@@ -20,6 +22,7 @@ export async function listMine(req: Request, res: Response, next: NextFunction):
   }
 }
 
+/** Handles GET /snippets/:id — retrieves a single snippet. */
 export async function getById(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const snippet = await snippetsService.getById(req.params.id as string, req.userId);
@@ -29,6 +32,7 @@ export async function getById(req: Request, res: Response, next: NextFunction): 
   }
 }
 
+/** Handles PUT /snippets/:id — updates a snippet. */
 export async function update(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const snippet = await snippetsService.update(req.params.id as string, req.userId!, req.body);
@@ -38,6 +42,7 @@ export async function update(req: Request, res: Response, next: NextFunction): P
   }
 }
 
+/** Handles DELETE /snippets/:id — deletes a snippet. */
 export async function remove(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     await snippetsService.remove(req.params.id as string, req.userId!);
@@ -47,6 +52,7 @@ export async function remove(req: Request, res: Response, next: NextFunction): P
   }
 }
 
+/** Handles GET /snippets/public — lists public snippets. */
 export async function listPublic(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { page, limit, language } = req.query as any;
@@ -57,6 +63,7 @@ export async function listPublic(req: Request, res: Response, next: NextFunction
   }
 }
 
+/** Handles GET /snippets/share/:shareSlug — retrieves a snippet by its share slug. */
 export async function getByShareSlug(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const snippet = await snippetsService.getByShareSlug(req.params.shareSlug as string);
@@ -66,6 +73,7 @@ export async function getByShareSlug(req: Request, res: Response, next: NextFunc
   }
 }
 
+/** Handles GET /snippets/search — full-text search across public snippets. */
 export async function search(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { q, language, page, limit } = req.query as any;
@@ -76,6 +84,7 @@ export async function search(req: Request, res: Response, next: NextFunction): P
   }
 }
 
+/** Handles POST /snippets/:id/fork — forks a snippet. */
 export async function fork(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const snippet = await snippetsService.fork(req.params.id as string, req.userId!);

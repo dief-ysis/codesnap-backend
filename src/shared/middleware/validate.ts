@@ -2,12 +2,25 @@ import type { Request, Response, NextFunction } from "express";
 import { type ZodSchema, ZodError } from "zod";
 import { BadRequestError } from "../errors/AppError.js";
 
+/** Schemas that can be validated against a request's body, params, or query. */
 interface ValidationSchemas {
   body?: ZodSchema;
   params?: ZodSchema;
   query?: ZodSchema;
 }
 
+/**
+ * Creates an Express middleware that validates request data against Zod schemas.
+ *
+ * @param schemas - Object containing optional body, params, and query Zod schemas
+ * @returns Express middleware that parses and validates, or passes a {@link BadRequestError}
+ * @throws {BadRequestError} When any schema validation fails
+ *
+ * @example
+ * ```ts
+ * router.post("/", validate({ body: createSnippetSchema }), controller.create);
+ * ```
+ */
 export function validate(schemas: ValidationSchemas) {
   return (req: Request, _res: Response, next: NextFunction): void => {
     try {

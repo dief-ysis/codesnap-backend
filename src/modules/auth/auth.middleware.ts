@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../../shared/utils/jwt.js";
 import { UnauthorizedError } from "../../shared/errors/AppError.js";
 
+/** Augments Express Request with an optional `userId` property set by {@link authenticate}. */
 declare global {
   namespace Express {
     interface Request {
@@ -10,6 +11,12 @@ declare global {
   }
 }
 
+/**
+ * Express middleware that extracts and verifies a JWT from the Authorization
+ * header, then attaches the `userId` to the request object.
+ *
+ * @throws {UnauthorizedError} If the token is missing, malformed, or expired
+ */
 export function authenticate(
   req: Request,
   _res: Response,

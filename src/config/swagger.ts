@@ -27,4 +27,5 @@ const options: swaggerJsdoc.Options = {
   apis: ["./src/modules/**/*.routes.ts"],
 };
 
+/** Generated OpenAPI 3.0 specification object, served at `/api-docs`. */
 export const swaggerSpec = swaggerJsdoc(options);

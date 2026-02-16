@@ -6,6 +6,7 @@ import {
 import type { CreateSnippetInput, UpdateSnippetInput } from "./snippets.schema.js";
 import type { Prisma } from "@prisma/client";
 
+/** Reusable Prisma select object for snippet queries, including user, tags, and fork count. */
 const snippetSelect = {
   id: true,
   title: true,
@@ -23,6 +24,7 @@ const snippetSelect = {
   _count: { select: { forks: true } },
 } satisfies Prisma.SnippetSelect;
 
+/** Flattens the Prisma join-table tags and promotes `_count.forks` to `forksCount`. */
 function formatSnippet(snippet: any) {
   return {
     ...snippet,
@@ -32,6 +34,7 @@ function formatSnippet(snippet: any) {
   };
 }
 
+/** Builds Prisma connectOrCreate operations for tags, normalising names to lowercase. */
 async function connectOrCreateTags(tags: string[]) {
   return tags.map((name) => ({
     tag: {
@@ -43,6 +46,13 @@ async function connectOrCreateTags(tags: string[]) {
   }));
 }
 
+/**
+ * Creates a new snippet with optional tags.
+ *
+ * @param userId - Owner's user ID
+ * @param input - Validated creation payload
+ * @returns The formatted snippet
+ */
 export async function create(userId: string, input: CreateSnippetInput) {
   const { tags, ...data } = input;
 
@@ -60,6 +70,9 @@ export async function create(userId: string, input: CreateSnippetInput) {
   return formatSnippet(snippet);
 }
 
+/**
+ * Lists snippets owned by a user with pagination and optional language filter.
+ */
 export async function listByUser(
   userId: string,
   page: number,
@@ -86,6 +99,12 @@ export async function listByUser(
   };
 }
 
+/**
+ * Retrieves a snippet by ID. Returns 404 (not 403) for private snippets
+ * the user doesn't own, to avoid leaking existence.
+ *
+ * @throws {NotFoundError} If snippet not found or is private and not owned
+ */
 export async function getById(snippetId: string, requestUserId?: string) {
   const snippet = await prisma.snippet.findUnique({
     where: { id: snippetId },
@@ -104,6 +123,12 @@ export async function getById(snippetId: string, requestUserId?: string) {
   return formatSnippet(snippet);
 }
 
+/**
+ * Updates a snippet. Uses atomic delete-all + recreate strategy for tags.
+ *
+ * @throws {NotFoundError} If snippet does not exist
+ * @throws {ForbiddenError} If the user does not own the snippet
+ */
 export async function update(
   snippetId: string,
   userId: string,
@@ -136,6 +161,12 @@ export async function update(
   return formatSnippet(snippet);
 }
 
+/**
+ * Deletes a snippet. Only the owner can delete.
+ *
+ * @throws {NotFoundError} If snippet does not exist
+ * @throws {ForbiddenError} If the user does not own the snippet
+ */
 export async function remove(snippetId: string, userId: string) {
   const existing = await prisma.snippet.findUnique({
     where: { id: snippetId },
@@ -148,6 +179,7 @@ export async function remove(snippetId: string, userId: string) {
   await prisma.snippet.delete({ where: { id: snippetId } });
 }
 
+/** Lists public snippets with pagination and optional language filter. */
 export async function listPublic(
   page: number,
   limit: number,
@@ -173,6 +205,11 @@ export async function listPublic(
   };
 }
 
+/**
+ * Retrieves a snippet by its public share slug. Returns 404 for private snippets.
+ *
+ * @throws {NotFoundError} If not found or is private
+ */
 export async function getByShareSlug(shareSlug: string) {
   const snippet = await prisma.snippet.findUnique({
     where: { shareSlug },
@@ -188,6 +225,10 @@ export async function getByShareSlug(shareSlug: string) {
   return formatSnippet(snippet);
 }
 
+/**
+ * Full-text search using PostgreSQL `tsvector`/`tsquery` via raw SQL.
+ * Prisma does not natively support full-text search, hence the raw query.
+ */
 export async function search(
   query: string,
   page: number,
@@ -253,6 +294,12 @@ export async function search(
   };
 }
 
+/**
+ * Forks (copies) a snippet. The fork is always created as PRIVATE and
+ * tracks lineage via `forkedFromId`.
+ *
+ * @throws {NotFoundError} If the original snippet does not exist
+ */
 export async function fork(snippetId: string, userId: string) {
   const original = await prisma.snippet.findUnique({
     where: { id: snippetId },
