@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  username     String       @unique
+  passwordHash String       @map("password_hash")
+  displayName  String?      @map("display_name")
+  avatarUrl    String?      @map("avatar_url")
+  bio          String?
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  snippets     Snippet[]
+  collections  Collection[]
+
+  @@map("users")
+}
+
+model Snippet {
+  id           String            @id @default(cuid())
+  title        String
+  description  String?
+  code         String
+  language     String
+  visibility   SnippetVisibility @default(PRIVATE)
+  shareSlug    String            @unique @default(cuid()) @map("share_slug")
+  forkedFromId String?           @map("forked_from_id")
+  userId       String            @map("user_id")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  forkedFrom   Snippet?          @relation("SnippetForks", fields: [forkedFromId], references: [id], onDelete: SetNull)
+  forks        Snippet[]         @relation("SnippetForks")
+  tags         SnippetTag[]
+  collections  CollectionSnippet[]
+
+  @@index([userId])
+  @@index([language])
+  @@index([visibility])
+  @@map("snippets")
+}
+
+model Tag {
+  id       String       @id @default(cuid())
+  name     String       @unique
+  snippets SnippetTag[]
+
+  @@map("tags")
+}
+
+model SnippetTag {
+  snippetId String  @map("snippet_id")
+  tagId     String  @map("tag_id")
+
+  snippet   Snippet @relation(fields: [snippetId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([snippetId, tagId])
+  @@map("snippet_tags")
+}
+
+model Collection {
+  id          String             @id @default(cuid())
+  name        String
+  description String?
+  userId      String             @map("user_id")
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  snippets    CollectionSnippet[]
+
+  @@index([userId])
+  @@map("collections")
+}
+
+model CollectionSnippet {
+  collectionId String     @map("collection_id")
+  snippetId    String     @map("snippet_id")
+  addedAt      DateTime   @default(now()) @map("added_at")
+
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  snippet      Snippet    @relation(fields: [snippetId], references: [id], onDelete: Cascade)
+
+  @@id([collectionId, snippetId])
+  @@map("collection_snippets")
+}
+
+enum SnippetVisibility {
+  PUBLIC
+  PRIVATE
+  UNLISTED
+}
