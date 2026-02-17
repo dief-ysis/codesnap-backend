@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 /**
  * Singleton Prisma client instance shared across the application.
- * Prisma v7 reads the datasource URL from `prisma.config.ts`.
+ * Reads the datasource URL from the `DATABASE_URL` environment variable.
  */
 const prisma = new PrismaClient();
 
