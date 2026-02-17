@@ -14,7 +14,7 @@ export async function create(req: Request, res: Response, next: NextFunction): P
 /** Handles GET /snippets — lists the authenticated user's snippets. */
 export async function listMine(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { page, limit, language } = req.query as any;
+    const { page, limit, language } = res.locals.query;
     const result = await snippetsService.listByUser(req.userId!, page, limit, language);
     res.json({ status: "success", data: result });
   } catch (error) {
@@ -55,7 +55,7 @@ export async function remove(req: Request, res: Response, next: NextFunction): P
 /** Handles GET /snippets/public — lists public snippets. */
 export async function listPublic(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { page, limit, language } = req.query as any;
+    const { page, limit, language } = res.locals.query;
     const result = await snippetsService.listPublic(page, limit, language);
     res.json({ status: "success", data: result });
   } catch (error) {
@@ -76,7 +76,7 @@ export async function getByShareSlug(req: Request, res: Response, next: NextFunc
 /** Handles GET /snippets/search — full-text search across public snippets. */
 export async function search(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { q, language, page, limit } = req.query as any;
+    const { q, language, page, limit } = res.locals.query;
     const result = await snippetsService.search(q, page, limit, language);
     res.json({ status: "success", data: result });
   } catch (error) {

@@ -22,7 +22,7 @@ interface ValidationSchemas {
  * ```
  */
 export function validate(schemas: ValidationSchemas) {
-  return (req: Request, _res: Response, next: NextFunction): void => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     try {
       if (schemas.body) {
         req.body = schemas.body.parse(req.body);
@@ -31,7 +31,10 @@ export function validate(schemas: ValidationSchemas) {
         req.params = schemas.params.parse(req.params) as typeof req.params;
       }
       if (schemas.query) {
-        req.query = schemas.query.parse(req.query) as typeof req.query;
+        // Express 5 makes req.query a read-only getter, so we can't reassign it.
+        // Store the Zod-parsed values (with coerced types and defaults) in
+        // res.locals.query so downstream handlers get the transformed data.
+        res.locals.query = schemas.query.parse(req.query);
       }
       next();
     } catch (error) {
