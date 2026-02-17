@@ -1,0 +1,32 @@
+﻿# Dockerfile para desarrollo con hot-reload
+FROM node:20-alpine
+
+# Instalar dependencias necesarias para Prisma
+RUN apk add --no-cache libc6-compat openssl
+
+WORKDIR /app
+
+# Copiar archivos de dependencias
+COPY package.json package-lock.json ./
+
+# Instalar todas las dependencias (incluyendo dev)
+RUN npm ci
+
+# Copiar Prisma schema
+COPY prisma ./prisma
+
+# Generar Prisma Client
+RUN npx prisma generate
+
+# Copiar resto del código
+COPY . .
+
+# Exponer puerto
+EXPOSE 4000
+
+# Variables de entorno por defecto
+ENV NODE_ENV=development
+ENV PORT=4000
+
+# Comando para desarrollo con hot-reload
+CMD ["npm", "run", "dev"]
