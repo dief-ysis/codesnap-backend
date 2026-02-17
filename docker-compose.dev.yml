@@ -1,0 +1,59 @@
+﻿services:
+  # Base de datos PostgreSQL para desarrollo
+  postgres:
+    image: postgres:16-alpine
+    container_name: codesnap-db-dev
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: codesnap
+      POSTGRES_PASSWORD: codesnap123
+      POSTGRES_DB: codesnap
+    volumes:
+      - postgres-data-dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U codesnap -d codesnap"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - codesnap-network-dev
+
+  # Backend en modo desarrollo con hot-reload
+  backend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: codesnap-backend-dev
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      DATABASE_URL: postgresql://codesnap:codesnap123@postgres:5432/codesnap
+      JWT_SECRET: dev-secret-key-at-least-32-chars-long
+      JWT_EXPIRES_IN: 7d
+      CORS_ORIGIN: http://localhost:3000
+    volumes:
+      # Montar código fuente para hot-reload
+      - ./src:/app/src
+      - ./prisma:/app/prisma
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./nodemon.json:/app/nodemon.json
+      # Evitar conflictos con node_modules del host
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - codesnap-network-dev
+
+volumes:
+  postgres-data-dev:
+    driver: local
+
+networks:
+  codesnap-network-dev:
+    driver: bridge
